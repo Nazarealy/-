@@ -1,28 +1,40 @@
-import openai
+import googlemaps
+import requests
+import json
 
-openai.api_key = 'PLACE_FOR_API' # люшній раз не показую
+def get_hotels(city):
+    api_key = 'YOUR_GOOGLE_PLACES_API_KEY'
+    url = f'https://maps.googleapis.com/maps/api/place/textsearch/json?query=hotels+in+{city}&key={api_key}'
+    
+    response = requests.get(url)
+    data = response.json()
+    
+    if data['status'] == 'OK':
+        hotels = data['results']
+        hotel_list = []
+        
+        for hotel in hotels:
+            hotel_info = {
+                'name': hotel['name'],
+                'address': hotel['formatted_address'],
+                'rating': hotel.get('rating', 'N/A'),
+                'reviews': hotel.get('user_ratings_total', 'N/A')
+            }
+            hotel_list.append(hotel_info)
+        
+        return hotel_list
+    else:
+        return "No hotels found for this city."
 
-def generate_recipe(ingredients):
-    # Формування запиту до GPT
-    prompt = f"У мене є такі інгредієнти: {', '.join(ingredients)}. Чи можете ви згенерувати рецепт, використовуючи ці інгредієнти?"
+city = input("Enter the name of the city: ")
+result = get_hotels(city)
 
-    # Виклик API GPT-3
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=200
-    )
-
-    # Отримання згенерованого рецепту
-    recipe = response.choices[0].text.strip()
-    return recipe
-
-# Введення інгредієнтів користувачем
-user_ingredients = input("Будь ласка, введіть список інгредієнтів через кому: ").split(',')
-
-# Генерація рецепту
-recipe = generate_recipe([ingredient.strip() for ingredient in user_ingredients])
-
-# Виведення згенерованого рецепту
-print("\nОсь рецепт, який ви можете спробувати:\n")
-print(recipe)
+if isinstance(result, list):
+    for hotel in result:
+        print(f"Name: {hotel['name']}")
+        print(f"Address: {hotel['address']}")
+        print(f"Rating: {hotel['rating']}")
+        print(f"Number of reviews: {hotel['reviews']}")
+        print("------------------------------------")
+else:
+    print(result)
