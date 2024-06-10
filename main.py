@@ -1,28 +1,44 @@
-import openai
+import tweepy
+from textblob import TextBlob
 
-openai.api_key = 'PLACE_FOR_API' # люшній раз не показую
+# Встановлюємо ключі доступу до Twitter API
+consumer_key = 'YOUR_CONSUMER_KEY'
+consumer_secret = 'YOUR_CONSUMER_SECRET'
+access_token = 'YOUR_ACCESS_TOKEN'
+access_token_secret = 'YOUR_ACCESS_TOKEN_SECRET'
 
-def generate_recipe(ingredients):
-    # Формування запиту до GPT
-    prompt = f"У мене є такі інгредієнти: {', '.join(ingredients)}. Чи можете ви згенерувати рецепт, використовуючи ці інгредієнти?"
+# Аутентифікація до Twitter API
+auth = tweepy.OAuth1UserHandler(consumer_key, consumer_secret, access_token, access_token_secret)
+api = tweepy.API(auth)
 
-    # Виклик API GPT-3
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=200
-    )
+def analyze_sentiment(tweet_text):
+    # Аналіз настрою за допомогою TextBlob
+    analysis = TextBlob(tweet_text)
+    return analysis.sentiment.polarity
 
-    # Отримання згенерованого рецепту
-    recipe = response.choices[0].text.strip()
-    return recipe
+def fetch_and_analyze_tweets(username):
+    # Отримання твітів користувача
+    tweets = api.user_timeline(screen_name=username, count=10, tweet_mode='extended')
+    
+    tweet_data = []
+    for tweet in tweets:
+        text = tweet.full_text
+        sentiment = analyze_sentiment(text)
+        tweet_data.append({
+            'text': text,
+            'sentiment': sentiment
+        })
+    
+    return tweet_data
 
-# Введення інгредієнтів користувачем
-user_ingredients = input("Будь ласка, введіть список інгредієнтів через кому: ").split(',')
+# Введення імені користувача Twitter
+user_handle = input("Будь ласка, введіть ім'я користувача Twitter: ")
 
-# Генерація рецепту
-recipe = generate_recipe([ingredient.strip() for ingredient in user_ingredients])
+# Отримання та аналіз твітів
+tweet_analysis = fetch_and_analyze_tweets(user_handle)
 
-# Виведення згенерованого рецепту
-print("\nОсь рецепт, який ви можете спробувати:\n")
-print(recipe)
+# Виведення результатів
+print(f"\nОсь аналіз настрою для останніх 10 твітів користувача @{user_handle}:\n")
+for tweet in tweet_analysis:
+    sentiment = "позитивний" if tweet['sentiment'] > 0 else "негативний" if tweet['sentiment'] < 0 else "нейтральний"
+    print(f"Твіт: {tweet['text']}\nНастрій: {sentiment}\n")
