@@ -1,13 +1,13 @@
 import tweepy
 from textblob import TextBlob
 
-# Встановлюємо ключі доступу до Twitter API
+# Встановлюємо ключі доступу до X API
 consumer_key = 'YOUR_CONSUMER_KEY'
 consumer_secret = 'YOUR_CONSUMER_SECRET'
 access_token = 'YOUR_ACCESS_TOKEN'
 access_token_secret = 'YOUR_ACCESS_TOKEN_SECRET'
 
-# Аутентифікація до Twitter API
+# Аутентифікація до X API
 auth = tweepy.OAuth1UserHandler(consumer_key, consumer_secret, access_token, access_token_secret)
 api = tweepy.API(auth)
 
@@ -31,8 +31,8 @@ def fetch_and_analyze_tweets(username):
     
     return tweet_data
 
-# Введення імені користувача Twitter
-user_handle = input("Будь ласка, введіть ім'я користувача Twitter: ")
+# Введення імені користувача X
+user_handle = input("Будь ласка, введіть ім'я користувача X: ")
 
 # Отримання та аналіз твітів
 tweet_analysis = fetch_and_analyze_tweets(user_handle)
